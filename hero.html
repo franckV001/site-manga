@@ -24,6 +24,15 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      html, body { scroll-behavior: auto; }
+    }
+
     :root {
       --cyan:    #00eeff;
       --pink:    #ff0066;
@@ -1667,7 +1676,7 @@
       font-weight: 300;
       line-height: 1.8;
       letter-spacing: .06em;
-      color: rgba(204,232,244,.35);
+      color: rgba(204,232,244,.55);
       margin-bottom: 28px;
     }
 
@@ -1750,9 +1759,10 @@
       color: var(--text);
     }
     .footer-input::placeholder { color: rgba(204,232,244,.25); }
+    .footer-input:focus-visible { outline: 1px solid var(--cyan); outline-offset: -1px; }
     .footer-submit {
       background: var(--cyan);
-      border: none; outline: none;
+      border: none;
       padding: 0 18px;
       font-size: 1.1rem;
       color: var(--dark);
@@ -1761,6 +1771,7 @@
       transition: background .2s;
     }
     .footer-submit:hover { background: #fff; }
+    .footer-submit:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
 
     /* Bas du footer */
     .footer-bottom {
@@ -2605,10 +2616,10 @@
 </section>
 
 <!-- ── MODALE FICHE MANGA ──────────────────────────────────── -->
-<div class="modal-overlay" id="manga-modal">
+<div class="modal-overlay" id="manga-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true">
   <div class="modal-backdrop" id="modal-backdrop"></div>
   <div class="modal-box">
-    <button class="modal-close" id="modal-close">&#10005;</button>
+    <button class="modal-close" id="modal-close" aria-label="Fermer la fiche">&#10005;</button>
     <div class="modal-grid">
 
       <div class="modal-visual">
@@ -2768,7 +2779,9 @@ document.addEventListener('mousemove', e => {
   }
 
   init();
-  draw();
+  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    draw();
+  }
   window.addEventListener('resize', init);
 })();
 
@@ -2917,10 +2930,33 @@ const mangaData = [
   const modalChaptersList = document.getElementById('modal-chapters-list');
   const modalRank        = document.getElementById('modal-rank');
   const modalImg         = document.getElementById('modal-img');
+  const modalBox         = modal.querySelector('.modal-box');
+  let lastFocused = null;
+
+  function getFocusable(){
+    return modalBox.querySelectorAll('a, button, input, [tabindex]:not([tabindex="-1"])');
+  }
+
+  function trapFocus(e){
+    if(e.key !== 'Tab') return;
+    const focusable = getFocusable();
+    if(!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if(e.shiftKey && document.activeElement === first){
+      e.preventDefault();
+      last.focus();
+    } else if(!e.shiftKey && document.activeElement === last){
+      e.preventDefault();
+      first.focus();
+    }
+  }
 
   function openModal(idx){
     const m = mangaData[idx];
     if(!m) return;
+
+    lastFocused = document.activeElement;
 
     if(m.video){
       modalImg.style.display = 'none';
@@ -2965,13 +3001,19 @@ const mangaData = [
     });
 
     modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
+    closeBtn.focus();
+    document.addEventListener('keydown', trapFocus);
   }
 
   function closeModal(){
     modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
     modalVideo.pause();
     document.body.style.overflow = '';
+    document.removeEventListener('keydown', trapFocus);
+    if(lastFocused) lastFocused.focus();
   }
 
   document.querySelectorAll('[data-manga-card]').forEach((card, idx) => {
