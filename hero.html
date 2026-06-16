@@ -1,0 +1,3006 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MANGA NEXUS — Beyond Reality</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Noto+Serif+JP:wght@200;300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cyan:    #00eeff;
+      --pink:    #ff0066;
+      --lime:    #aaff00;
+      --dark:    #020208;
+      --darker:  #010105;
+      --text:    #cce8f4;
+      --glow-c:  0 0 8px #00eeff, 0 0 20px #00eeff55, 0 0 40px #00eeff22;
+      --glow-p:  0 0 8px #ff0066, 0 0 20px #ff006655, 0 0 40px #ff006622;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow-x: hidden;
+      background: var(--darker);
+      cursor: none;
+    }
+
+    /* ── CURSOR ─────────────────────────────────────────── */
+    #cursor {
+      position: fixed; z-index: 9999;
+      width: 20px; height: 20px;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: transform .1s;
+    }
+    #cursor::before, #cursor::after {
+      content: '';
+      position: absolute;
+      border: 1px solid var(--cyan);
+    }
+    #cursor::before {
+      inset: 0;
+      clip-path: polygon(0 30%, 0 0, 30% 0);
+      box-shadow: -2px -2px 6px var(--cyan);
+    }
+    #cursor::after {
+      inset: 0;
+      clip-path: polygon(100% 70%, 100% 100%, 70% 100%);
+      box-shadow: 2px 2px 6px var(--pink);
+      border-color: var(--pink);
+    }
+    #cursor-dot {
+      position: fixed; z-index: 9999;
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--cyan);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      box-shadow: var(--glow-c);
+    }
+
+    /* ── HERO CONTAINER ─────────────────────────────────── */
+    .hero {
+      position: relative;
+      width: 100vw; height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+
+    /* ── VIDEO BACKGROUND ───────────────────────────────── */
+    .hero-video {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center;
+      filter: brightness(1) saturate(1) hue-rotate(0deg);
+    }
+
+    /* ── OVERLAYS ───────────────────────────────────────── */
+    .overlay-gradient {
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(to right, rgba(2,2,8,.65) 0%, rgba(2,2,8,.25) 50%, rgba(2,2,8,.1) 100%),
+        linear-gradient(to bottom, rgba(0,0,0,.3) 0%, transparent 30%, transparent 70%, rgba(0,0,0,.4) 100%);
+      z-index: 1;
+    }
+
+    .overlay-scanlines {
+      position: absolute; inset: 0; z-index: 2;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent 0px, transparent 3px,
+        rgba(0,0,0,.05) 3px, rgba(0,0,0,.05) 4px
+      );
+      animation: scanShift 8s linear infinite;
+    }
+    @keyframes scanShift {
+      0%   { background-position: 0 0; }
+      100% { background-position: 0 400px; }
+    }
+
+    .overlay-vignette {
+      position: absolute; inset: 0; z-index: 3;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,.35) 100%);
+    }
+
+    .overlay-noise {
+      position: absolute; inset: 0; z-index: 4;
+      opacity: .03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 180px;
+      pointer-events: none;
+    }
+
+    /* ── GRID ───────────────────────────────────────────── */
+    .grid-layer {
+      position: absolute; inset: 0; z-index: 5;
+      background-image:
+        linear-gradient(rgba(0,238,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,238,255,.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      transform: perspective(600px) rotateX(60deg) translateY(-20%) scale(1.6);
+      transform-origin: 50% 100%;
+      mask-image: linear-gradient(to top, rgba(0,0,0,.5) 0%, transparent 50%);
+      -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,.5) 0%, transparent 50%);
+    }
+
+    /* ── HORIZONTAL NEON LINES ──────────────────────────── */
+    .neon-line {
+      position: absolute; left: 0; right: 0; z-index: 6;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--cyan), transparent);
+      opacity: 0;
+      animation: lineFlash 5s ease-in-out infinite;
+    }
+    .neon-line:nth-child(1) { top: 30%; animation-delay: 0s; }
+    .neon-line:nth-child(2) { top: 68%; animation-delay: 2.5s; background: linear-gradient(to right, transparent, var(--pink), transparent); }
+    @keyframes lineFlash {
+      0%, 100% { opacity: 0; transform: scaleX(0); }
+      50%       { opacity: .6; transform: scaleX(1); }
+    }
+
+    /* ── HUD CORNERS ────────────────────────────────────── */
+    .hud-corner {
+      position: absolute; z-index: 10;
+      width: 60px; height: 60px;
+    }
+    .hud-corner::before, .hud-corner::after {
+      content: '';
+      position: absolute;
+      background: var(--cyan);
+    }
+    .hud-corner::before { width: 100%; height: 1px; }
+    .hud-corner::after  { width: 1px; height: 100%; }
+
+    .hud-corner.tl { top: 24px; left: 24px; }
+    .hud-corner.tl::before { top: 0; left: 0; }
+    .hud-corner.tl::after  { top: 0; left: 0; }
+    .hud-corner.tl .dot { top: -3px; left: -3px; }
+
+    .hud-corner.tr { top: 24px; right: 24px; transform: scaleX(-1); }
+    .hud-corner.br { bottom: 24px; right: 24px; transform: scale(-1); border-color: var(--pink); }
+    .hud-corner.br::before, .hud-corner.br::after { background: var(--pink); }
+    .hud-corner.bl { bottom: 24px; left: 24px; transform: scaleY(-1); }
+
+    .hud-dot {
+      position: absolute;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--cyan);
+      top: -3px; left: -3px;
+      box-shadow: var(--glow-c);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .hud-corner.br .hud-dot { background: var(--pink); box-shadow: var(--glow-p); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .4; transform: scale(1.5); }
+    }
+
+    /* ── STATUS BAR ─────────────────────────────────────── */
+    .status-bar {
+      position: absolute; top: 24px; left: 0; right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 90px;
+    }
+
+    .status-logo {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: .85rem;
+      letter-spacing: .3em;
+      color: var(--cyan);
+      text-shadow: var(--glow-c);
+    }
+
+    .status-items {
+      display: flex; gap: 32px; align-items: center;
+    }
+    .status-item {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .72rem;
+      font-weight: 300;
+      letter-spacing: .18em;
+      color: rgba(204,232,244,.4);
+      text-transform: uppercase;
+    }
+    .status-item span {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    .status-ping {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 6px var(--lime);
+      animation: pingAnim 1.5s ease-in-out infinite;
+    }
+    @keyframes pingAnim {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .2; }
+    }
+
+    /* ── MAIN CONTENT ───────────────────────────────────── */
+    .hero-content {
+      position: relative; z-index: 15;
+      padding: 0 8vw;
+      max-width: 780px;
+    }
+
+    /* ── OVERLINE ───────────────────────────────────────── */
+    .overline {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 28px;
+    }
+    .overline-bar {
+      width: 40px; height: 1px;
+      background: var(--pink);
+      box-shadow: var(--glow-p);
+    }
+    .overline-text {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .35em;
+      color: var(--pink);
+      text-transform: uppercase;
+    }
+
+    /* ── TITLE + GLITCH ─────────────────────────────────── */
+    .hero-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(3rem, 7vw, 6.5rem);
+      line-height: .95;
+      letter-spacing: -.01em;
+      color: #fff;
+      text-transform: uppercase;
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .glitch-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .glitch-wrap::before,
+    .glitch-wrap::after {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      font-family: inherit;
+      font-weight: inherit;
+      font-size: inherit;
+      line-height: inherit;
+    }
+    .glitch-wrap::before {
+      color: var(--cyan);
+      clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+      animation: glitchA 4s steps(1) infinite;
+    }
+    .glitch-wrap::after {
+      color: var(--pink);
+      clip-path: polygon(0 65%, 100% 65%, 100% 80%, 0 80%);
+      animation: glitchB 4s steps(1) infinite;
+    }
+    @keyframes glitchA {
+      0%,90%,100% { transform: none; opacity: 0; }
+      91%          { transform: translateX(-4px); opacity: .8; }
+      93%          { transform: translateX(4px); opacity: .5; }
+      95%          { transform: none; opacity: 0; }
+    }
+    @keyframes glitchB {
+      0%,88%,100% { transform: none; opacity: 0; }
+      89%          { transform: translateX(6px); opacity: .7; }
+      92%          { transform: translateX(-3px); opacity: .4; }
+      94%          { transform: none; opacity: 0; }
+    }
+
+    .title-accent {
+      display: block;
+      background: linear-gradient(90deg, var(--cyan) 0%, #fff 40%, var(--pink) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── KANJI STRIPE ───────────────────────────────────── */
+    .kanji-stripe {
+      font-family: 'Noto Serif JP', serif;
+      font-weight: 200;
+      font-size: 1.15rem;
+      letter-spacing: .22em;
+      color: rgba(0,238,255,.3);
+      margin-bottom: 32px;
+    }
+
+    /* ── HERO SUBTITLE ──────────────────────────────────── */
+    .hero-subtitle {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: clamp(.95rem, 1.5vw, 1.15rem);
+      font-weight: 300;
+      letter-spacing: .06em;
+      line-height: 1.75;
+      color: rgba(204,232,244,.6);
+      max-width: 480px;
+      margin-bottom: 48px;
+    }
+    .hero-subtitle strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ── BUTTONS ────────────────────────────────────────── */
+    .hero-buttons {
+      display: flex; gap: 20px; align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      position: relative;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: .72rem;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 14px 36px;
+      cursor: none;
+      overflow: hidden;
+      transition: all .3s;
+    }
+
+    .btn-primary {
+      color: var(--dark);
+      background: var(--cyan);
+      clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+      box-shadow: 0 0 20px rgba(0,238,255,.35);
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent);
+      transform: translateX(-100%);
+      transition: transform .5s;
+    }
+    .btn-primary:hover::before { transform: translateX(100%); }
+    .btn-primary:hover { box-shadow: 0 0 40px rgba(0,238,255,.7); }
+
+    .btn-secondary {
+      color: var(--cyan);
+      border: 1px solid rgba(0,238,255,.35);
+      background: rgba(0,238,255,.04);
+      clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+      backdrop-filter: blur(4px);
+    }
+    .btn-secondary:hover {
+      border-color: var(--cyan);
+      background: rgba(0,238,255,.12);
+      box-shadow: var(--glow-c);
+    }
+
+    /* ── STATS ROW ──────────────────────────────────────── */
+    .stats-row {
+      position: absolute; bottom: 40px; left: 0; right: 0;
+      z-index: 15;
+      display: flex;
+      justify-content: center;
+      gap: 0;
+    }
+
+    .stat {
+      padding: 18px 40px;
+      text-align: center;
+      position: relative;
+    }
+    .stat + .stat::before {
+      content: '';
+      position: absolute; left: 0; top: 20%; bottom: 20%;
+      width: 1px;
+      background: rgba(0,238,255,.2);
+    }
+    .stat-number {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.6rem;
+      color: var(--cyan);
+      text-shadow: var(--glow-c);
+      display: block;
+    }
+    .stat-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .68rem;
+      font-weight: 300;
+      letter-spacing: .25em;
+      color: rgba(204,232,244,.35);
+      text-transform: uppercase;
+      display: block;
+      margin-top: 4px;
+    }
+
+    /* ── SCROLL INDICATOR ───────────────────────────────── */
+    .scroll-indicator {
+      position: absolute; right: 36px; bottom: 40px;
+      z-index: 15;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 10px;
+    }
+    .scroll-indicator span {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .62rem;
+      letter-spacing: .35em;
+      color: rgba(204,232,244,.3);
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+    }
+    .scroll-line {
+      width: 1px; height: 60px;
+      background: linear-gradient(to bottom, var(--cyan), transparent);
+      animation: scrollDrop 2s ease-in-out infinite;
+    }
+    @keyframes scrollDrop {
+      0%   { transform: scaleY(0); transform-origin: top; opacity: 1; }
+      50%  { transform: scaleY(1); transform-origin: top; opacity: 1; }
+      51%  { transform: scaleY(1); transform-origin: bottom; }
+      100% { transform: scaleY(0); transform-origin: bottom; opacity: .2; }
+    }
+
+    /* ── FLOATING KANJI ─────────────────────────────────── */
+    .kanji-float {
+      position: absolute; z-index: 7;
+      font-family: 'Noto Serif JP', serif;
+      font-weight: 200;
+      color: rgba(0,238,255,.07);
+      pointer-events: none;
+      user-select: none;
+    }
+    .kf1 { font-size: 12rem; top: -2%; right: 5%; animation: kFloat 12s ease-in-out infinite; }
+    .kf2 { font-size: 6rem; top: 40%; right: 22%; animation: kFloat 9s ease-in-out infinite reverse; animation-delay: -3s; }
+    .kf3 { font-size: 4rem; bottom: 8%; right: 38%; animation: kFloat 15s ease-in-out infinite; animation-delay: -6s; color: rgba(255,0,102,.06); }
+    @keyframes kFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      33%       { transform: translateY(-18px) rotate(2deg); }
+      66%       { transform: translateY(10px) rotate(-1deg); }
+    }
+
+    /* ── PARTICLE CANVAS ────────────────────────────────── */
+    #particles {
+      position: absolute; inset: 0; z-index: 8;
+      pointer-events: none;
+    }
+
+    /* ── REVEAL ANIMATIONS ──────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      animation: revealUp .8s cubic-bezier(.22,1,.36,1) forwards;
+    }
+    .r1 { animation-delay: .3s; }
+    .r2 { animation-delay: .5s; }
+    .r3 { animation-delay: .7s; }
+    .r4 { animation-delay: .9s; }
+    .r5 { animation-delay: 1.1s; }
+    @keyframes revealUp {
+      to { opacity: 1; transform: none; }
+    }
+
+    /* ── PRESENTATION SECTION ───────────────────────────── */
+    .pres-section {
+      position: relative;
+      background: #07070f;
+      overflow: hidden;
+      padding: 120px 8vw;
+    }
+
+    .pres-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,238,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,238,255,.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    .pres-section::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--cyan), var(--pink), transparent);
+      opacity: .5;
+    }
+
+    .pres-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    /* LEFT */
+    .pres-left {
+      position: sticky;
+      top: 80px;
+    }
+
+    .pres-tag {
+      display: inline-flex; align-items: center; gap: 12px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .35em;
+      color: var(--pink);
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+    .pres-tag::before {
+      content: '';
+      display: block;
+      width: 32px; height: 1px;
+      background: var(--pink);
+      box-shadow: var(--glow-p);
+    }
+
+    .pres-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2rem, 3.5vw, 3.2rem);
+      line-height: 1.05;
+      letter-spacing: -.01em;
+      color: #fff;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+    .pres-title em {
+      font-style: normal;
+      display: block;
+      background: linear-gradient(90deg, var(--cyan), #fff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .pres-desc {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 300;
+      line-height: 1.85;
+      letter-spacing: .04em;
+      color: rgba(204,232,244,.55);
+      margin-bottom: 48px;
+    }
+    .pres-desc strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .pres-deco {
+      display: flex; align-items: center; gap: 20px;
+    }
+    .pres-deco-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, var(--cyan), transparent);
+      max-width: 120px;
+    }
+    .pres-deco-kanji {
+      font-family: 'Noto Serif JP', serif;
+      font-weight: 200;
+      font-size: 1.4rem;
+      letter-spacing: .2em;
+      color: rgba(0,238,255,.25);
+    }
+
+    /* RIGHT — FEATURES */
+    .pres-right {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .feat-item {
+      position: relative;
+      padding: 36px 0 36px 28px;
+      border-bottom: 1px solid rgba(0,238,255,.08);
+      cursor: none;
+      transition: padding-left .35s cubic-bezier(.22,1,.36,1);
+    }
+    .feat-item:first-child { border-top: 1px solid rgba(0,238,255,.08); }
+
+    .feat-item::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--cyan);
+      transform: scaleY(0);
+      transform-origin: top;
+      transition: transform .4s cubic-bezier(.22,1,.36,1);
+      box-shadow: var(--glow-c);
+    }
+    .feat-item:hover::before { transform: scaleY(1); }
+    .feat-item:hover { padding-left: 40px; }
+
+    .feat-num {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .25em;
+      color: var(--cyan);
+      opacity: .5;
+      display: block;
+      margin-bottom: 10px;
+      transition: opacity .3s;
+    }
+    .feat-item:hover .feat-num { opacity: 1; text-shadow: var(--glow-c); }
+
+    .feat-header {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .feat-icon {
+      width: 36px; height: 36px;
+      border: 1px solid rgba(0,238,255,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      transition: border-color .3s, box-shadow .3s;
+    }
+    .feat-item:hover .feat-icon {
+      border-color: var(--cyan);
+      box-shadow: var(--glow-c);
+    }
+
+    .feat-name {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: .85rem;
+      letter-spacing: .1em;
+      color: #fff;
+      text-transform: uppercase;
+      transition: color .3s;
+    }
+    .feat-item:hover .feat-name { color: var(--cyan); }
+
+    .feat-desc {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .95rem;
+      font-weight: 300;
+      line-height: 1.7;
+      letter-spacing: .04em;
+      color: rgba(204,232,244,.45);
+      transition: color .3s;
+    }
+    .feat-item:hover .feat-desc { color: rgba(204,232,244,.7); }
+
+    /* ── SCROLL-REVEAL FOR SECTION ─────────────────────── */
+    .sr {
+      opacity: 0;
+      transform: translateY(36px);
+      transition: opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1);
+    }
+    .sr.visible { opacity: 1; transform: none; }
+    .sr-delay-1 { transition-delay: .1s; }
+    .sr-delay-2 { transition-delay: .22s; }
+    .sr-delay-3 { transition-delay: .34s; }
+    .sr-delay-4 { transition-delay: .46s; }
+    .sr-delay-5 { transition-delay: .58s; }
+    .sr-delay-6 { transition-delay: .70s; }
+
+    /* ── IMAGE FUTURISTE ────────────────────────────────── */
+    .pres-img-wrap {
+      position: relative;
+      margin-top: 44px;
+    }
+
+    /* bordure neon en pseudo-element derrière */
+    .pres-img-border {
+      position: absolute;
+      inset: -1px;
+      clip-path: polygon(
+        0 0, calc(100% - 28px) 0,
+        100% 28px,
+        100% 100%,
+        28px 100%,
+        0 calc(100% - 28px)
+      );
+      background: linear-gradient(135deg, var(--cyan) 0%, transparent 45%, var(--pink) 100%);
+      z-index: 0;
+    }
+
+    /* cadre principal */
+    .pres-img-frame {
+      position: relative;
+      z-index: 1;
+      clip-path: polygon(
+        0 0, calc(100% - 28px) 0,
+        100% 28px,
+        100% 100%,
+        28px 100%,
+        0 calc(100% - 28px)
+      );
+      overflow: hidden;
+      background: #000;
+    }
+
+    .pres-img-frame img {
+      width: 100%;
+      display: block;
+      filter: saturate(1.25) contrast(1.05) brightness(.95);
+      transition: transform .6s cubic-bezier(.22,1,.36,1), filter .4s;
+    }
+    .pres-img-wrap:hover .pres-img-frame img {
+      transform: scale(1.04);
+      filter: saturate(1.5) contrast(1.1) brightness(1);
+    }
+
+    /* scanlines sur l'image */
+    .pres-img-frame::after {
+      content: '';
+      position: absolute; inset: 0; z-index: 2;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent 0px, transparent 3px,
+        rgba(0,0,0,.07) 3px, rgba(0,0,0,.07) 4px
+      );
+      pointer-events: none;
+    }
+
+    /* overlay couleur cyan au hover */
+    .pres-img-frame::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 3;
+      background: linear-gradient(to top, rgba(0,238,255,.18) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity .4s;
+      pointer-events: none;
+    }
+    .pres-img-wrap:hover .pres-img-frame::before { opacity: 1; }
+
+    /* coins HUD sur l'image */
+    .img-corner {
+      position: absolute; z-index: 4;
+      width: 22px; height: 22px;
+      pointer-events: none;
+    }
+    .img-corner::before, .img-corner::after {
+      content: '';
+      position: absolute;
+      background: var(--cyan);
+      box-shadow: var(--glow-c);
+    }
+    .img-corner::before { width: 100%; height: 1px; top: 0; left: 0; }
+    .img-corner::after  { width: 1px; height: 100%; top: 0; left: 0; }
+    .img-corner.tl { top: 10px; left: 10px; }
+    .img-corner.br {
+      bottom: 10px; right: 10px;
+      transform: rotate(180deg);
+    }
+    .img-corner.br::before, .img-corner.br::after { background: var(--pink); box-shadow: var(--glow-p); }
+
+    /* label scan */
+    .img-label {
+      position: absolute; z-index: 4;
+      bottom: 14px; left: 14px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: .58rem;
+      font-weight: 700;
+      letter-spacing: .25em;
+      color: var(--cyan);
+      text-shadow: var(--glow-c);
+      text-transform: uppercase;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .img-label::before {
+      content: '';
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 6px var(--lime);
+      animation: pingAnim 1.5s ease-in-out infinite;
+    }
+
+    /* trait décoratif lateral */
+    .img-side-bar {
+      position: absolute; z-index: 4;
+      right: -16px; top: 20%; bottom: 20%;
+      width: 2px;
+      background: linear-gradient(to bottom, transparent, var(--cyan), transparent);
+      box-shadow: var(--glow-c);
+    }
+
+    /* ── CADRE VIDÉO FUTURISTE ──────────────────────────── */
+    .vid-wrap {
+      position: relative;
+      margin-top: 40px;
+    }
+
+    /* Bordure néon externe */
+    .vid-border {
+      position: absolute; inset: -1px; z-index: 0;
+      clip-path: polygon(
+        20px 0%, calc(100% - 20px) 0%,
+        100% 20px, 100% calc(100% - 20px),
+        calc(100% - 20px) 100%, 20px 100%,
+        0% calc(100% - 20px), 0% 20px
+      );
+      background: linear-gradient(135deg,
+        var(--pink) 0%,
+        var(--cyan) 35%,
+        transparent 55%,
+        var(--pink) 100%
+      );
+      animation: borderPulse 4s ease-in-out infinite;
+    }
+    @keyframes borderPulse {
+      0%, 100% { opacity: .8; }
+      50%       { opacity: 1; filter: brightness(1.4); }
+    }
+
+    /* Cadre vidéo principal */
+    .vid-frame {
+      position: relative; z-index: 1;
+      clip-path: polygon(
+        20px 0%, calc(100% - 20px) 0%,
+        100% 20px, 100% calc(100% - 20px),
+        calc(100% - 20px) 100%, 20px 100%,
+        0% calc(100% - 20px), 0% 20px
+      );
+      overflow: hidden;
+      background: #000;
+      aspect-ratio: 16 / 9;
+    }
+
+    .vid-frame video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Scanlines sur la vidéo */
+    .vid-scanlines {
+      position: absolute; inset: 0; z-index: 2; pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent 0px, transparent 2px,
+        rgba(0,0,0,.08) 2px, rgba(0,0,0,.08) 3px
+      );
+    }
+
+    /* Overlay gradient bas pour lisibilité labels */
+    .vid-overlay {
+      position: absolute; inset: 0; z-index: 3; pointer-events: none;
+      background:
+        linear-gradient(to bottom, rgba(0,0,0,.55) 0%, transparent 30%, transparent 65%, rgba(0,0,0,.75) 100%);
+    }
+
+    /* Coins HUD */
+    .vid-corner {
+      position: absolute; z-index: 5;
+      width: 18px; height: 18px;
+      pointer-events: none;
+    }
+    .vid-corner::before, .vid-corner::after {
+      content: '';
+      position: absolute;
+    }
+    .vid-corner::before { width: 100%; height: 1.5px; top: 0; left: 0; }
+    .vid-corner::after  { width: 1.5px; height: 100%; top: 0; left: 0; }
+    .vid-corner.vtl { top: 8px; left: 8px; }
+    .vid-corner.vtl::before, .vid-corner.vtl::after {
+      background: var(--cyan); box-shadow: var(--glow-c);
+    }
+    .vid-corner.vtr { top: 8px; right: 8px; transform: scaleX(-1); }
+    .vid-corner.vtr::before, .vid-corner.vtr::after {
+      background: var(--cyan); box-shadow: var(--glow-c);
+    }
+    .vid-corner.vbr { bottom: 8px; right: 8px; transform: scale(-1); }
+    .vid-corner.vbr::before, .vid-corner.vbr::after {
+      background: var(--pink); box-shadow: var(--glow-p);
+    }
+    .vid-corner.vbl { bottom: 8px; left: 8px; transform: scaleY(-1); }
+    .vid-corner.vbl::before, .vid-corner.vbl::after {
+      background: var(--pink); box-shadow: var(--glow-p);
+    }
+
+    /* Label haut */
+    .vid-label-top {
+      position: absolute; top: 12px; left: 12px; right: 12px;
+      z-index: 6;
+      display: flex; align-items: center; justify-content: space-between;
+      pointer-events: none;
+    }
+    .vid-live {
+      display: flex; align-items: center; gap: 7px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: .58rem; font-weight: 700;
+      letter-spacing: .25em;
+      color: var(--pink);
+      text-shadow: var(--glow-p);
+    }
+    .vid-live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--pink);
+      box-shadow: var(--glow-p);
+      animation: pingAnim 1s ease-in-out infinite;
+    }
+    .vid-title-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .65rem; font-weight: 600;
+      letter-spacing: .2em;
+      color: rgba(204,232,244,.5);
+      text-transform: uppercase;
+    }
+
+    /* Label bas */
+    .vid-label-bot {
+      position: absolute; bottom: 12px; left: 12px; right: 12px;
+      z-index: 6;
+      display: flex; align-items: center; justify-content: space-between;
+      pointer-events: none;
+    }
+    .vid-timecode {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .6rem; font-weight: 400;
+      letter-spacing: .15em;
+      color: rgba(0,238,255,.7);
+    }
+    .vid-res {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .65rem; font-weight: 600;
+      letter-spacing: .2em;
+      color: rgba(170,255,0,.6);
+      text-transform: uppercase;
+    }
+
+    /* Lignes horizontales intérieures */
+    .vid-inner-line {
+      position: absolute; left: 24px; right: 24px;
+      height: 1px; z-index: 4; pointer-events: none;
+      opacity: .35;
+    }
+    .vid-inner-line.top {
+      top: 38px;
+      background: linear-gradient(to right, transparent, var(--cyan), transparent);
+    }
+    .vid-inner-line.bot {
+      bottom: 38px;
+      background: linear-gradient(to right, transparent, var(--pink), transparent);
+    }
+
+    /* Barres latérales déco */
+    .vid-sidebar {
+      position: absolute; top: 15%; bottom: 15%;
+      width: 2px; z-index: 0;
+    }
+    .vid-sidebar.left  {
+      left: -14px;
+      background: linear-gradient(to bottom, transparent, var(--pink), transparent);
+      box-shadow: var(--glow-p);
+    }
+    .vid-sidebar.right {
+      right: -14px;
+      background: linear-gradient(to bottom, transparent, var(--cyan), transparent);
+      box-shadow: var(--glow-c);
+    }
+
+    /* Description sous vidéo */
+    .vid-desc {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      margin-top: 28px;
+      padding: 24px 20px;
+      background: rgba(0,238,255,.03);
+      border: 1px solid rgba(0,238,255,.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .vid-desc::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(0,238,255,.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .vid-desc-bar {
+      flex-shrink: 0;
+      width: 2px;
+      align-self: stretch;
+      background: linear-gradient(to bottom, var(--pink), var(--cyan));
+      box-shadow: var(--glow-c);
+    }
+    .vid-desc-content { flex: 1; }
+    .vid-desc-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      color: #fff;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .vid-desc-text {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .97rem;
+      font-weight: 300;
+      line-height: 1.75;
+      letter-spacing: .04em;
+      color: rgba(204,232,244,.55);
+      margin-bottom: 20px;
+    }
+    .vid-desc-text strong { color: var(--text); font-weight: 600; }
+    .vid-desc-btn {
+      display: inline-block;
+      font-size: .65rem;
+      padding: 10px 24px;
+    }
+
+    /* Responsive vidéo */
+    @media (max-width: 640px) {
+      .vid-sidebar { display: none; }
+    }
+
+    /* ── SECTION CATALOGUE ──────────────────────────────── */
+    .cat-section {
+      position: relative;
+      background: #050510;
+      padding: 100px 0 80px;
+      overflow: hidden;
+    }
+    .cat-section::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--pink), var(--cyan), transparent);
+      opacity: .4;
+    }
+
+    /* arrière-plan déco */
+    .cat-section::after {
+      content: 'TRENDING';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 18vw;
+      color: rgba(0,238,255,.018);
+      letter-spacing: .15em;
+      pointer-events: none;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .cat-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 8vw;
+      margin-bottom: 52px;
+    }
+    .cat-tag {
+      display: inline-flex; align-items: center; gap: 12px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .7rem; font-weight: 600;
+      letter-spacing: .35em;
+      color: var(--cyan);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .cat-tag::before {
+      content: '';
+      width: 28px; height: 1px;
+      background: var(--cyan);
+      box-shadow: var(--glow-c);
+    }
+    .cat-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(1.6rem, 3vw, 2.6rem);
+      color: #fff;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    .cat-title span {
+      color: var(--cyan);
+      text-shadow: var(--glow-c);
+    }
+
+    /* Boutons navigation */
+    .cat-nav {
+      display: flex; gap: 10px;
+    }
+    .cat-nav-btn {
+      width: 44px; height: 44px;
+      border: 1px solid rgba(0,238,255,.25);
+      background: rgba(0,238,255,.04);
+      color: var(--cyan);
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: none;
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+      transition: background .25s, border-color .25s, box-shadow .25s;
+    }
+    .cat-nav-btn:hover {
+      background: rgba(0,238,255,.14);
+      border-color: var(--cyan);
+      box-shadow: var(--glow-c);
+    }
+
+    /* Scroll track */
+    .cat-track-wrap {
+      position: relative;
+      padding: 0 8vw;
+    }
+    .cat-track {
+      display: flex;
+      gap: 22px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      padding-bottom: 24px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,238,255,.3) rgba(0,238,255,.05);
+    }
+    .cat-track::-webkit-scrollbar { height: 3px; }
+    .cat-track::-webkit-scrollbar-track { background: rgba(0,238,255,.04); }
+    .cat-track::-webkit-scrollbar-thumb {
+      background: rgba(0,238,255,.3);
+      border-radius: 2px;
+    }
+
+    /* ── CARTE MANGA ────────────────────────────────────── */
+    .manga-card {
+      flex-shrink: 0;
+      width: 200px;
+      position: relative;
+      cursor: none;
+      transition: transform .4s cubic-bezier(.22,1,.36,1);
+    }
+    .manga-card:hover { transform: translateY(-10px); }
+
+    .manga-card-inner {
+      position: relative;
+      aspect-ratio: 2 / 3;
+      clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+      overflow: hidden;
+      border: 1px solid rgba(0,238,255,.25);
+      box-shadow: 0 0 14px rgba(0,238,255,.12), inset 0 0 18px rgba(0,238,255,.05);
+      transition: border-color .3s, box-shadow .3s;
+    }
+    .manga-card:hover .manga-card-inner {
+      border-color: var(--cyan);
+      box-shadow: var(--glow-c), inset 0 0 24px rgba(0,238,255,.1);
+    }
+
+    /* Fond dégradé unique par carte */
+    .manga-card-inner .card-bg {
+      position: absolute; inset: 0;
+      transition: transform .5s cubic-bezier(.22,1,.36,1);
+    }
+    .manga-card:hover .card-bg { transform: scale(1.06); }
+
+    /* Vidéo en fond de carte (remplace card-bg) */
+    .card-video {
+      position: absolute; inset: 0; z-index: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: saturate(1.2) brightness(.85);
+      transition: transform .5s cubic-bezier(.22,1,.36,1), filter .4s;
+    }
+    .manga-card:hover .card-video {
+      transform: scale(1.06);
+      filter: saturate(1.4) brightness(.95);
+    }
+
+    .card-bg.g1 { background: linear-gradient(160deg, #0d0d2b 0%, #1a0533 40%, #0a1a3a 100%); }
+    .card-bg.g2 { background: linear-gradient(160deg, #00101a 0%, #002233 50%, #001a10 100%); }
+    .card-bg.g3 { background: linear-gradient(160deg, #1a0500 0%, #2b0a00 40%, #0d0a00 100%); }
+    .card-bg.g4 { background: linear-gradient(160deg, #001a1a 0%, #00261a 50%, #001233 100%); }
+    .card-bg.g5 { background: linear-gradient(160deg, #1a0015 0%, #330026 50%, #0d0033 100%); }
+    .card-bg.g6 { background: linear-gradient(160deg, #1a0a00 0%, #2b1500 50%, #0d0510 100%); }
+    .card-bg.g7 { background: linear-gradient(160deg, #0d001a 0%, #1a003a 50%, #000d2b 100%); }
+    .card-bg.g8 { background: linear-gradient(160deg, #001010 0%, #002020 50%, #000a1a 100%); }
+
+    /* Kanji déco en fond de carte */
+    .card-kanji {
+      position: absolute; z-index: 1;
+      bottom: -10px; right: -10px;
+      font-family: 'Noto Serif JP', serif;
+      font-weight: 200;
+      font-size: 7rem;
+      line-height: 1;
+      opacity: .1;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* Grain sur la carte */
+    .card-grain {
+      position: absolute; inset: 0; z-index: 2;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 120px;
+      opacity: .04;
+      pointer-events: none;
+    }
+
+    /* Badge rang */
+    .card-rank {
+      position: absolute; top: 10px; left: 10px; z-index: 5;
+      font-family: 'Orbitron', sans-serif;
+      font-size: .55rem; font-weight: 900;
+      letter-spacing: .15em;
+      color: var(--cyan);
+      text-shadow: var(--glow-c);
+    }
+
+    /* Overlay bas */
+    .card-overlay {
+      position: absolute; inset: 0; z-index: 4;
+      background: linear-gradient(to top, rgba(0,0,0,.9) 0%, rgba(0,0,0,.3) 45%, transparent 70%);
+    }
+
+    /* Contenu bas de carte */
+    .card-info {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      z-index: 6;
+      padding: 14px 12px;
+    }
+    .card-genre {
+      display: inline-block;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .6rem; font-weight: 600;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border: 1px solid;
+      margin-bottom: 8px;
+    }
+    .card-title-text {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: .72rem;
+      letter-spacing: .06em;
+      color: #fff;
+      text-transform: uppercase;
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+    .card-meta {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-rating {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .7rem; font-weight: 600;
+      letter-spacing: .08em;
+      color: var(--lime);
+    }
+    .card-chaps {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .62rem; font-weight: 300;
+      letter-spacing: .12em;
+      color: rgba(204,232,244,.4);
+    }
+
+    /* Bouton LIRE (apparaît au hover) */
+    .card-read {
+      position: absolute; inset: 0; z-index: 7;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      background: rgba(0,0,0,.4);
+      backdrop-filter: blur(2px);
+      transition: opacity .3s;
+    }
+    .manga-card:hover .card-read { opacity: 1; }
+    .card-read span {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .65rem; font-weight: 700;
+      letter-spacing: .25em;
+      color: var(--dark);
+      background: var(--cyan);
+      padding: 10px 22px;
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+      box-shadow: 0 0 20px rgba(0,238,255,.5);
+    }
+
+    /* Bordure néon coin haut-droite sur card */
+    .manga-card-inner::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; z-index: 8;
+      width: 16px; height: 16px;
+      pointer-events: none;
+      border-top: 1px solid var(--cyan);
+      border-right: 1px solid var(--cyan);
+      opacity: 0;
+      box-shadow: var(--glow-c);
+      transition: opacity .3s;
+    }
+    .manga-card:hover .manga-card-inner::after { opacity: 1; }
+
+    /* Infos sous la card */
+    .card-sub {
+      margin-top: 12px;
+      padding: 0 2px;
+    }
+    .card-sub-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .62rem; font-weight: 700;
+      letter-spacing: .08em;
+      color: rgba(204,232,244,.7);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .card-sub-tag {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .65rem; font-weight: 300;
+      letter-spacing: .12em;
+      color: rgba(204,232,244,.35);
+    }
+
+    /* ── SECTION SPOTLIGHT ──────────────────────────────── */
+    .spot-section {
+      position: relative;
+      background: #030309;
+      padding: 110px 8vw;
+      overflow: hidden;
+    }
+    .spot-section::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--cyan), transparent);
+      opacity: .35;
+    }
+
+    /* Halo lumineux en fond */
+    .spot-section::after {
+      content: '';
+      position: absolute;
+      width: 700px; height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,0,102,.06) 0%, transparent 70%);
+      top: 50%; left: -10%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .spot-inner {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 80px;
+      align-items: center;
+      max-width: 1300px;
+      margin: 0 auto;
+      position: relative; z-index: 1;
+    }
+
+    /* ── VISUEL GAUCHE ─────────────────────────────────── */
+    .spot-visual { position: relative; }
+
+    .spot-img-border {
+      position: absolute; inset: -2px; z-index: 0;
+      clip-path: polygon(0 0, calc(100% - 32px) 0, 100% 32px, 100% 100%, 32px 100%, 0 calc(100% - 32px));
+      background: linear-gradient(160deg, var(--cyan) 0%, transparent 40%, var(--pink) 100%);
+      animation: borderPulse 3s ease-in-out infinite;
+    }
+
+    .spot-img-frame {
+      position: relative; z-index: 1;
+      clip-path: polygon(0 0, calc(100% - 32px) 0, 100% 32px, 100% 100%, 32px 100%, 0 calc(100% - 32px));
+      overflow: hidden;
+      background: #000;
+      aspect-ratio: 3 / 4;
+    }
+    .spot-img-frame img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+      filter: saturate(1.2) brightness(.9);
+      transition: transform .6s cubic-bezier(.22,1,.36,1);
+    }
+    .spot-visual:hover .spot-img-frame img { transform: scale(1.04); }
+
+    /* Overlay sur image */
+    .spot-img-frame::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 2;
+      background: linear-gradient(to top, rgba(3,3,9,.85) 0%, transparent 45%);
+      pointer-events: none;
+    }
+    /* Scanlines */
+    .spot-img-frame::after {
+      content: '';
+      position: absolute; inset: 0; z-index: 3;
+      background: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(0,0,0,.06) 3px, rgba(0,0,0,.06) 4px);
+      pointer-events: none;
+    }
+
+    /* Badge "SÉRIE DU MOMENT" en haut */
+    .spot-badge {
+      position: absolute; top: 16px; left: 16px; z-index: 8;
+      font-family: 'Orbitron', sans-serif;
+      font-size: .55rem; font-weight: 700;
+      letter-spacing: .22em;
+      color: var(--dark);
+      background: var(--pink);
+      padding: 5px 12px;
+      clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+      box-shadow: var(--glow-p);
+      animation: borderPulse 2s ease-in-out infinite;
+    }
+
+    /* Badge NEW CHAPTER */
+    .spot-new {
+      position: absolute; bottom: 20px; left: 0; right: 0; z-index: 8;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .spot-new-inner {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .72rem; font-weight: 600;
+      letter-spacing: .2em;
+      color: var(--cyan);
+      border: 1px solid rgba(0,238,255,.3);
+      background: rgba(0,238,255,.06);
+      padding: 6px 18px;
+      backdrop-filter: blur(6px);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .spot-new-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--lime); box-shadow: 0 0 6px var(--lime);
+      animation: pingAnim 1s ease-in-out infinite;
+    }
+
+    /* Coins HUD visuels */
+    .spot-corner {
+      position: absolute; z-index: 9;
+      width: 20px; height: 20px; pointer-events: none;
+    }
+    .spot-corner::before, .spot-corner::after { content: ''; position: absolute; }
+    .spot-corner::before { width: 100%; height: 1.5px; top: 0; left: 0; }
+    .spot-corner::after  { width: 1.5px; height: 100%; top: 0; left: 0; }
+    .spot-corner.stl { top: 10px; left: 10px; }
+    .spot-corner.stl::before, .spot-corner.stl::after { background: var(--cyan); box-shadow: var(--glow-c); }
+    .spot-corner.sbr { bottom: 10px; right: 10px; transform: rotate(180deg); }
+    .spot-corner.sbr::before, .spot-corner.sbr::after { background: var(--pink); box-shadow: var(--glow-p); }
+
+    /* Barre verticale déco à gauche du visuel */
+    .spot-bar {
+      position: absolute; top: 10%; bottom: 10%;
+      left: -20px; width: 2px;
+      background: linear-gradient(to bottom, transparent, var(--pink), transparent);
+      box-shadow: var(--glow-p);
+    }
+
+
+
+    .spot-tag {
+      display: inline-flex; align-items: center; gap: 12px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .7rem; font-weight: 600;
+      letter-spacing: .35em; color: var(--pink);
+      text-transform: uppercase; margin-bottom: 24px;
+    }
+    .spot-tag::before {
+      content: ''; width: 28px; height: 1px;
+      background: var(--pink); box-shadow: var(--glow-p);
+    }
+
+    .spot-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2rem, 4vw, 3.6rem);
+      line-height: .95;
+      color: #fff;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .spot-title .t-grad {
+      display: block;
+      background: linear-gradient(90deg, var(--pink) 0%, #fff 50%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .spot-subtitle-jp {
+      font-family: 'Noto Serif JP', serif;
+      font-weight: 200;
+      font-size: 1rem;
+      letter-spacing: .3em;
+      color: rgba(255,0,102,.3);
+      margin-bottom: 28px;
+    }
+
+    /* Tags genre */
+    .spot-genres {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .spot-genre-tag {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .68rem; font-weight: 600;
+      letter-spacing: .18em;
+      padding: 4px 14px;
+      border: 1px solid;
+      text-transform: uppercase;
+    }
+
+    /* Synopsis */
+    .spot-synopsis {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem; font-weight: 300;
+      line-height: 1.85; letter-spacing: .04em;
+      color: rgba(204,232,244,.55);
+      margin-bottom: 36px;
+      border-left: 2px solid rgba(255,0,102,.3);
+      padding-left: 20px;
+    }
+    .spot-synopsis strong { color: var(--text); font-weight: 600; }
+
+    /* Stats */
+    .spot-stats {
+      display: flex; gap: 32px;
+      margin-bottom: 40px;
+      padding: 20px 0;
+      border-top: 1px solid rgba(0,238,255,.08);
+      border-bottom: 1px solid rgba(0,238,255,.08);
+    }
+    .spot-stat-val {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900; font-size: 1.4rem;
+      display: block; margin-bottom: 4px;
+    }
+    .spot-stat-val.gold { color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,.4); }
+    .spot-stat-val.cyan { color: var(--cyan); text-shadow: var(--glow-c); }
+    .spot-stat-val.pink { color: var(--pink); text-shadow: var(--glow-p); }
+    .spot-stat-lbl {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .65rem; font-weight: 300;
+      letter-spacing: .22em;
+      color: rgba(204,232,244,.35);
+      text-transform: uppercase;
+    }
+
+    /* Boutons */
+    .spot-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
+
+    /* Responsive spotlight */
+    @media (max-width: 960px) {
+      .spot-inner { grid-template-columns: 1fr; gap: 48px; }
+      .spot-img-frame { aspect-ratio: 4 / 3; max-height: 400px; }
+      .spot-img-frame img { object-position: center 20%; }
+      .spot-bar { display: none; }
+    }
+    @media (max-width: 640px) {
+      .spot-section { padding: 70px 5vw; }
+      .spot-stats { gap: 20px; }
+      .spot-stat-val { font-size: 1.1rem; }
+      .spot-buttons { flex-direction: column; }
+    }
+
+    /* Responsive catalogue */
+    @media (max-width: 768px) {
+      .cat-header { padding: 0 5vw; flex-direction: column; align-items: flex-start; gap: 20px; }
+      .cat-track-wrap { padding: 0 5vw; }
+      .manga-card { width: 160px; }
+    }
+    @media (max-width: 480px) {
+      .cat-section { padding: 70px 0 60px; }
+      .cat-title { font-size: 1.5rem; }
+      .manga-card { width: 145px; }
+    }
+
+    /* ── FOOTER ─────────────────────────────────────────── */
+    .site-footer {
+      position: relative;
+      background: #020207;
+      padding: 0 8vw 40px;
+      overflow: hidden;
+    }
+    .site-footer::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,238,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,238,255,.018) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    .footer-top-line {
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--pink), var(--cyan), transparent);
+      opacity: .4;
+      margin-bottom: 64px;
+    }
+
+    .footer-inner {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1.4fr;
+      gap: 48px;
+      max-width: 1300px;
+      margin: 0 auto 56px;
+      position: relative; z-index: 1;
+    }
+
+    /* Brand */
+    .footer-logo {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.6rem;
+      letter-spacing: .12em;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+    .footer-logo span { color: var(--cyan); text-shadow: var(--glow-c); }
+
+    .footer-tagline {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .88rem;
+      font-weight: 300;
+      line-height: 1.8;
+      letter-spacing: .06em;
+      color: rgba(204,232,244,.35);
+      margin-bottom: 28px;
+    }
+
+    .footer-socials { display: flex; gap: 12px; }
+    .footer-social {
+      width: 38px; height: 38px;
+      border: 1px solid rgba(0,238,255,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      color: rgba(204,232,244,.5);
+      text-decoration: none;
+      clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+      transition: border-color .25s, color .25s, background .25s;
+      cursor: none;
+    }
+    .footer-social:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(0,238,255,.08);
+    }
+
+    /* Colonnes liens */
+    .footer-col-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .25em;
+      color: var(--cyan);
+      text-transform: uppercase;
+      margin-bottom: 22px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(0,238,255,.12);
+    }
+    .footer-links {
+      list-style: none;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .footer-links a {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .9rem;
+      font-weight: 300;
+      letter-spacing: .08em;
+      color: rgba(204,232,244,.4);
+      text-decoration: none;
+      transition: color .2s, padding-left .2s;
+      cursor: none;
+      display: block;
+    }
+    .footer-links a:hover { color: var(--text); padding-left: 6px; }
+
+    /* Newsletter */
+    .footer-newsletter-desc {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .85rem;
+      font-weight: 300;
+      line-height: 1.7;
+      color: rgba(204,232,244,.4);
+      margin-bottom: 18px;
+    }
+    .footer-form {
+      display: flex;
+      border: 1px solid rgba(0,238,255,.2);
+      background: rgba(0,238,255,.03);
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+      overflow: hidden;
+      transition: border-color .25s;
+    }
+    .footer-form:focus-within {
+      border-color: var(--cyan);
+      box-shadow: 0 0 16px rgba(0,238,255,.12);
+    }
+    .footer-input {
+      flex: 1;
+      background: transparent;
+      border: none; outline: none;
+      padding: 11px 16px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .85rem;
+      letter-spacing: .06em;
+      color: var(--text);
+    }
+    .footer-input::placeholder { color: rgba(204,232,244,.25); }
+    .footer-submit {
+      background: var(--cyan);
+      border: none; outline: none;
+      padding: 0 18px;
+      font-size: 1.1rem;
+      color: var(--dark);
+      font-weight: 700;
+      cursor: none;
+      transition: background .2s;
+    }
+    .footer-submit:hover { background: #fff; }
+
+    /* Bas du footer */
+    .footer-bottom {
+      position: relative; z-index: 1;
+      max-width: 1300px; margin: 0 auto;
+      padding-top: 24px;
+      border-top: 1px solid rgba(0,238,255,.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-copy, .footer-build {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .68rem;
+      font-weight: 300;
+      letter-spacing: .15em;
+      color: rgba(204,232,244,.25);
+      text-transform: uppercase;
+    }
+    .footer-build { color: rgba(0,238,255,.25); }
+    .footer-legal {
+      display: flex; gap: 20px;
+    }
+    .footer-legal a {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .68rem;
+      font-weight: 300;
+      letter-spacing: .15em;
+      color: rgba(204,232,244,.25);
+      text-decoration: none;
+      text-transform: uppercase;
+      cursor: none;
+      transition: color .2s;
+    }
+    .footer-legal a:hover { color: var(--cyan); }
+
+    /* Responsive footer */
+    @media (max-width: 960px) {
+      .footer-inner { grid-template-columns: 1fr 1fr; gap: 36px; }
+    }
+    @media (max-width: 560px) {
+      .footer-inner { grid-template-columns: 1fr; }
+      .footer-bottom { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .site-footer { padding: 0 5vw 32px; }
+    }
+
+    /* ── MODALE FICHE MANGA ─────────────────────────────── */
+    .manga-card { cursor: none; }
+
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+      padding: 5vh 4vw;
+      opacity: 0; visibility: hidden;
+      transition: opacity .35s, visibility .35s;
+    }
+    .modal-overlay.open { opacity: 1; visibility: visible; }
+
+    .modal-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(2,2,8,.88);
+      backdrop-filter: blur(8px);
+    }
+
+    .modal-box {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 1040px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #07070f;
+      transform: scale(.94) translateY(20px);
+      opacity: 0;
+      transition: transform .4s cubic-bezier(.22,1,.36,1), opacity .4s;
+      clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 28px 100%, 0 calc(100% - 28px));
+      border: 1px solid rgba(0,238,255,.15);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,238,255,.3) transparent;
+    }
+    .modal-overlay.open .modal-box { transform: scale(1) translateY(0); opacity: 1; }
+
+    .modal-close {
+      position: absolute; top: 18px; right: 18px; z-index: 10;
+      width: 38px; height: 38px;
+      border: 1px solid rgba(0,238,255,.3);
+      background: rgba(0,0,0,.4);
+      color: var(--cyan);
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: none;
+      transition: background .2s, box-shadow .2s;
+    }
+    .modal-close:hover { background: rgba(0,238,255,.15); box-shadow: var(--glow-c); }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+    }
+
+    /* Visuel modale */
+    .modal-visual {
+      position: relative;
+      aspect-ratio: 3/4;
+      overflow: hidden;
+      background: #000;
+    }
+    .modal-video, .modal-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: saturate(1.2) brightness(.85);
+    }
+    .modal-visual-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to right, transparent 60%, #07070f 100%),
+                  linear-gradient(to top, rgba(0,0,0,.7) 0%, transparent 35%);
+    }
+    .modal-corner {
+      position: absolute; width: 20px; height: 20px; z-index: 4;
+    }
+    .modal-corner::before, .modal-corner::after { content:''; position:absolute; background: var(--cyan); box-shadow: var(--glow-c); }
+    .modal-corner::before { width: 100%; height: 1.5px; top:0; left:0; }
+    .modal-corner::after  { width: 1.5px; height: 100%; top:0; left:0; }
+    .modal-corner.mtl { top: 14px; left: 14px; }
+    .modal-corner.mbr { bottom: 14px; right: 14px; transform: rotate(180deg); }
+    .modal-rank {
+      position: absolute; top: 14px; right: 14px; z-index: 5;
+      font-family: 'Orbitron', sans-serif;
+      font-size: .65rem; font-weight: 900; letter-spacing: .15em;
+      color: var(--cyan); text-shadow: var(--glow-c);
+    }
+
+    /* Contenu modale */
+    .modal-content { padding: 40px 44px; }
+
+    .modal-genres { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+    .modal-genre-tag {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .62rem; font-weight: 600; letter-spacing: .16em;
+      padding: 3px 12px; border: 1px solid; text-transform: uppercase;
+    }
+
+    .modal-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      color: #fff; text-transform: uppercase; line-height: 1.05;
+      margin-bottom: 6px;
+    }
+    .modal-jp {
+      font-family: 'Noto Serif JP', serif;
+      font-weight: 200; font-size: .85rem;
+      letter-spacing: .2em; color: rgba(0,238,255,.3);
+      margin-bottom: 22px;
+    }
+
+    .modal-stats {
+      display: flex; gap: 28px;
+      padding: 16px 0;
+      border-top: 1px solid rgba(0,238,255,.08);
+      border-bottom: 1px solid rgba(0,238,255,.08);
+      margin-bottom: 22px;
+    }
+    .modal-stat-val {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900; font-size: 1.15rem; display: block; margin-bottom: 3px;
+    }
+    .modal-stat-lbl {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .6rem; font-weight: 300; letter-spacing: .18em;
+      color: rgba(204,232,244,.35); text-transform: uppercase;
+    }
+
+    .modal-synopsis {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .92rem; font-weight: 300; line-height: 1.8;
+      letter-spacing: .03em; color: rgba(204,232,244,.55);
+      margin-bottom: 28px;
+    }
+
+    .modal-chapters-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .65rem; font-weight: 700; letter-spacing: .22em;
+      color: var(--cyan); text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .modal-chapters-list { list-style: none; margin-bottom: 30px; }
+    .modal-chapters-list li {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0,238,255,.06);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .82rem; letter-spacing: .04em;
+      color: rgba(204,232,244,.6);
+      transition: color .2s, padding-left .2s;
+      cursor: none;
+    }
+    .modal-chapters-list li:hover { color: var(--cyan); padding-left: 6px; }
+    .modal-chapters-list li span:last-child {
+      font-size: .68rem; color: rgba(204,232,244,.3); letter-spacing: .1em;
+    }
+
+    .modal-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
+
+    @media (max-width: 760px) {
+      .modal-grid { grid-template-columns: 1fr; }
+      .modal-visual { aspect-ratio: 16/9; }
+      .modal-visual-overlay {
+        background: linear-gradient(to bottom, transparent 50%, #07070f 100%);
+      }
+      .modal-content { padding: 28px 24px; }
+    }
+    @media (max-width: 480px) {
+      .modal-overlay { padding: 0; }
+      .modal-box { max-height: 100vh; height: 100%; clip-path: none; border: none; }
+      .modal-stats { gap: 18px; flex-wrap: wrap; }
+    }
+
+    /* ══ RESPONSIVE ════════════════════════════════════════ */
+
+    /* ── Tablette paysage ── */
+    @media (max-width: 1100px) {
+      .status-bar { padding: 0 60px; }
+      .hud-corner { width: 44px; height: 44px; }
+      .hud-corner.tl, .hud-corner.bl { left: 16px; }
+      .hud-corner.tr, .hud-corner.br { right: 16px; }
+      .hud-corner.tl, .hud-corner.tr { top: 16px; }
+      .hud-corner.bl, .hud-corner.br { bottom: 16px; }
+
+      .pres-inner { gap: 48px; }
+      .pres-section { padding: 90px 6vw; }
+    }
+
+    /* ── Tablette portrait ── */
+    @media (max-width: 900px) {
+      /* Hero */
+      .status-bar { padding: 0 40px; }
+      .status-items { gap: 18px; }
+      .status-item:nth-child(2) { display: none; }
+
+      .hero-content { padding: 0 6vw; max-width: 100%; }
+
+      .stats-row { gap: 0; }
+      .stat { padding: 14px 24px; }
+      .stat-number { font-size: 1.3rem; }
+
+      .scroll-indicator { right: 20px; }
+
+      /* Présentation : passe en colonne */
+      .pres-inner {
+        grid-template-columns: 1fr;
+        gap: 56px;
+      }
+      .pres-left {
+        position: static;
+      }
+      .pres-img-wrap { max-width: 480px; }
+      .img-side-bar { display: none; }
+    }
+
+    /* ── Mobile large ── */
+    @media (max-width: 640px) {
+      /* Hero */
+      .status-bar { padding: 0 24px; }
+      .status-item:nth-child(3) { display: none; }
+      .status-logo { font-size: .75rem; }
+
+      .hud-corner { width: 32px; height: 32px; }
+
+      .hero-content { padding: 0 5vw; }
+
+      .hero-buttons { flex-direction: column; align-items: flex-start; gap: 14px; }
+      .btn { padding: 12px 28px; font-size: .68rem; }
+
+      .stats-row { flex-wrap: wrap; justify-content: center; }
+      .stat { padding: 12px 18px; }
+      .stat-number { font-size: 1.1rem; }
+      .stat-label { font-size: .6rem; }
+
+      .scroll-indicator { display: none; }
+
+      /* Présentation */
+      .pres-section { padding: 70px 5vw; }
+      .pres-title { font-size: clamp(1.7rem, 6vw, 2.4rem); }
+      .pres-desc { font-size: .95rem; }
+
+      .feat-item { padding: 26px 0 26px 22px; }
+      .feat-name { font-size: .78rem; }
+      .feat-desc { font-size: .88rem; }
+      .feat-icon { width: 30px; height: 30px; font-size: .85rem; }
+
+      .pres-img-wrap { max-width: 100%; }
+    }
+
+    /* ── Mobile petit ── */
+    @media (max-width: 420px) {
+      .status-ping, .status-item { display: none; }
+      .status-bar { justify-content: center; }
+
+      .kanji-float { display: none; }
+
+      .stats-row { display: none; }
+
+      .pres-tag { font-size: .62rem; }
+      .pres-deco-kanji { font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── CUSTOM CURSOR ─────────────────────────────────────── -->
+<div id="cursor"></div>
+<div id="cursor-dot"></div>
+
+<!-- ── HERO ─────────────────────────────────────────────── -->
+<section class="hero">
+
+  <!-- Video -->
+  <video class="hero-video" autoplay muted loop playsinline>
+    <source src="video/hero_manga.mp4" type="video/mp4" />
+  </video>
+
+  <!-- Overlays -->
+  <div class="overlay-gradient"></div>
+  <div class="overlay-scanlines"></div>
+  <div class="overlay-vignette"></div>
+  <div class="overlay-noise"></div>
+
+  <!-- Perspective grid -->
+  <div class="grid-layer"></div>
+
+  <!-- Horizontal neon flashes -->
+  <div class="neon-line"></div>
+  <div class="neon-line"></div>
+
+  <!-- Floating kanji -->
+  <span class="kanji-float kf1">漫</span>
+  <span class="kanji-float kf2">画</span>
+  <span class="kanji-float kf3">界</span>
+
+  <!-- Particle canvas -->
+  <canvas id="particles"></canvas>
+
+  <!-- HUD corners -->
+  <div class="hud-corner tl"><div class="hud-dot"></div></div>
+  <div class="hud-corner tr"><div class="hud-dot"></div></div>
+  <div class="hud-corner br"><div class="hud-dot"></div></div>
+  <div class="hud-corner bl"><div class="hud-dot"></div></div>
+
+  <!-- Status bar -->
+  <header class="status-bar">
+    <div class="status-logo">MNG&#x2022;NXS</div>
+    <div class="status-items">
+      <span class="status-item">SÉRIE <span>4,200+</span></span>
+      <span class="status-item">LANG <span>FR / JP</span></span>
+      <span class="status-item">BUILD <span>2077.6</span></span>
+      <div class="status-ping"></div>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <div class="hero-content">
+
+    <div class="overline reveal r1">
+      <span class="overline-bar"></span>
+      <span class="overline-text">Système en ligne — Accès autorisé</span>
+    </div>
+
+    <h1 class="hero-title reveal r2">
+      <span class="glitch-wrap" data-text="MANGA">MANGA</span>
+      <br />
+      <span class="title-accent glitch-wrap" data-text="NEXUS">NEXUS</span>
+    </h1>
+
+    <p class="kanji-stripe reveal r3">漫画 &nbsp;·&nbsp; 未来 &nbsp;·&nbsp; 無限</p>
+
+    <p class="hero-subtitle reveal r4">
+      Plongez dans un <strong>univers parallèle</strong> où chaque série
+      transcende les limites du réel. Des mondes infinis vous attendent,
+      tracés à l'encre et codés dans le futur.
+    </p>
+
+    <div class="hero-buttons reveal r5">
+      <a href="#" class="btn btn-primary">Explorer l'univers</a>
+      <a href="#" class="btn btn-secondary">Voir la bande-annonce</a>
+    </div>
+
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat reveal r4">
+      <span class="stat-number" data-target="4200">0</span>
+      <span class="stat-label">Séries disponibles</span>
+    </div>
+    <div class="stat reveal r4" style="animation-delay:.95s">
+      <span class="stat-number" data-target="890000">0</span>
+      <span class="stat-label">Lecteurs actifs</span>
+    </div>
+    <div class="stat reveal r4" style="animation-delay:1.05s">
+      <span class="stat-number" data-target="98">0</span>
+      <span class="stat-label">Genres / univers</span>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="scroll-indicator">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+
+</section>
+
+<!-- ── PRÉSENTATION ──────────────────────────────────────── -->
+<section class="pres-section">
+  <div class="pres-inner">
+
+    <!-- LEFT : accroche -->
+    <div class="pres-left">
+      <div class="pres-tag sr">À propos de la plateforme</div>
+
+      <h2 class="pres-title sr sr-delay-1">
+        La référence<br/>
+        <em>manga du futur</em>
+      </h2>
+
+      <p class="pres-desc sr sr-delay-2">
+        Manga Nexus n'est pas une simple bibliothèque numérique.
+        C'est un <strong>écosystème vivant</strong> conçu pour les passionnés
+        qui veulent explorer, découvrir et vivre l'art manga dans toute
+        sa profondeur — de l'œuvre classique aux dernières sorties japonaises,
+        en haute définition, sans interruption.
+      </p>
+
+      <div class="pres-deco sr sr-delay-3">
+        <div class="pres-deco-line"></div>
+        <span class="pres-deco-kanji">次世代 · 漫画</span>
+      </div>
+
+      <!-- Image futuriste -->
+      <div class="pres-img-wrap sr sr-delay-4">
+        <div class="pres-img-border"></div>
+        <div class="pres-img-frame">
+          <img src="img/Futuristic_character_with_katana.webp" alt="Personnage futuriste avec katana" />
+          <div class="img-corner tl"></div>
+          <div class="img-corner br"></div>
+          <span class="img-label">Personnage actif</span>
+        </div>
+        <div class="img-side-bar"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT : features -->
+    <div class="pres-right">
+
+      <div class="feat-item sr sr-delay-2">
+        <span class="feat-num">01</span>
+        <div class="feat-header">
+          <div class="feat-icon">📚</div>
+          <span class="feat-name">Bibliothèque immense</span>
+        </div>
+        <p class="feat-desc">
+          Plus de 4 200 séries disponibles en continu — shonen, shojo,
+          seinen, isekai, et bien plus. Chaque semaine, de nouveaux
+          titres issus directement des éditeurs japonais.
+        </p>
+      </div>
+
+      <div class="feat-item sr sr-delay-3">
+        <span class="feat-num">02</span>
+        <div class="feat-header">
+          <div class="feat-icon">⚡</div>
+          <span class="feat-name">Lecture instantanée</span>
+        </div>
+        <p class="feat-desc">
+          Pages en haute définition, chargement instantané, mode
+          vertical ou double page. Zéro publicité, zéro interruption.
+          Juste vous et l'histoire.
+        </p>
+      </div>
+
+      <div class="feat-item sr sr-delay-4">
+        <span class="feat-num">03</span>
+        <div class="feat-header">
+          <div class="feat-icon">🌐</div>
+          <span class="feat-name">Multi-langue</span>
+        </div>
+        <p class="feat-desc">
+          Lisez en français, japonais ou anglais selon vos préférences.
+          Les traductions sont mises à jour en temps réel par notre
+          réseau de traducteurs certifiés.
+        </p>
+      </div>
+
+      <div class="feat-item sr sr-delay-5">
+        <span class="feat-num">04</span>
+        <div class="feat-header">
+          <div class="feat-icon">👥</div>
+          <span class="feat-name">Communauté active</span>
+        </div>
+        <p class="feat-desc">
+          Rejoignez 890 000 lecteurs passionnés. Notez, commentez,
+          créez des listes de lecture et participez aux discussions
+          autour de vos séries favorites.
+        </p>
+      </div>
+
+      <!-- Cadre vidéo futuriste -->
+      <div class="vid-wrap sr sr-delay-6">
+        <div class="vid-border"></div>
+        <div class="vid-frame">
+          <video autoplay muted loop playsinline>
+            <source src="video/anime_le_vehicule.mp4" type="video/mp4" />
+          </video>
+          <!-- Scanlines -->
+          <div class="vid-scanlines"></div>
+          <!-- Overlay gradient bas -->
+          <div class="vid-overlay"></div>
+          <!-- Coins HUD -->
+          <div class="vid-corner vtl"></div>
+          <div class="vid-corner vtr"></div>
+          <div class="vid-corner vbr"></div>
+          <div class="vid-corner vbl"></div>
+          <!-- Labels data -->
+          <div class="vid-label-top">
+            <span class="vid-live"><span class="vid-live-dot"></span>LIVE</span>
+            <span class="vid-title-label">ANIME · VÉHICULE</span>
+          </div>
+          <div class="vid-label-bot">
+            <span class="vid-timecode" id="vid-timecode">00:00:00</span>
+            <span class="vid-res">1080p · HD</span>
+          </div>
+          <!-- Lignes de bord intérieures -->
+          <div class="vid-inner-line top"></div>
+          <div class="vid-inner-line bot"></div>
+        </div>
+        <!-- Barres latérales déco -->
+        <div class="vid-sidebar left"></div>
+        <div class="vid-sidebar right"></div>
+      </div>
+
+      <!-- Description sous la vidéo -->
+      <div class="vid-desc sr sr-delay-6">
+        <div class="vid-desc-bar"></div>
+        <div class="vid-desc-content">
+          <p class="vid-desc-title">Immersion totale dans l'univers animé</p>
+          <p class="vid-desc-text">
+            Vivez chaque série comme si vous y étiez. Nos bandes-annonces
+            exclusives vous plongent au cœur de l'action — vitesse,
+            adrénaline, esthétique cyberpunk. <strong>Le manga prend vie.</strong>
+          </p>
+          <a href="#" class="btn btn-secondary vid-desc-btn">Voir toutes les bandes-annonces</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── CATALOGUE TENDANCES ──────────────────────────────── -->
+<section class="cat-section">
+
+  <div class="cat-header sr">
+    <div>
+      <div class="cat-tag">Tendances cette semaine</div>
+      <h2 class="cat-title">Top <span>Manga</span></h2>
+    </div>
+    <div class="cat-nav">
+      <button class="cat-nav-btn" id="cat-prev" aria-label="Précédent">&#8592;</button>
+      <button class="cat-nav-btn" id="cat-next" aria-label="Suivant">&#8594;</button>
+    </div>
+  </div>
+
+  <div class="cat-track-wrap">
+    <div class="cat-track" id="cat-track">
+
+      <!-- Card 1 -->
+      <div class="manga-card" data-manga-card>
+        <div class="manga-card-inner">
+          <video class="card-video" autoplay muted loop playsinline>
+            <source src="video/Noe_Kyoto.mp4" type="video/mp4" />
+          </video>
+          <span class="card-kanji">侍</span>
+          <div class="card-grain"></div>
+          <div class="card-overlay"></div>
+          <span class="card-rank">#01</span>
+          <div class="card-info">
+            <span class="card-genre" style="color:#00eeff;border-color:rgba(0,238,255,.4)">Seinen</span>
+            <p class="card-title-text">Neo<br/>Kyoto</p>
+            <div class="card-meta">
+              <span class="card-rating">★ 4.9</span>
+              <span class="card-chaps">148 ch.</span>
+            </div>
+          </div>
+          <div class="card-read"><span>LIRE</span></div>
+        </div>
+        <div class="card-sub">
+          <p class="card-sub-title">Neo Kyoto</p>
+          <p class="card-sub-tag">Action · Cyberpunk</p>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="manga-card" data-manga-card>
+        <div class="manga-card-inner">
+          <video class="card-video" autoplay muted loop playsinline>
+            <source src="video/gosth_protocole.mp4" type="video/mp4" />
+          </video>
+          <span class="card-kanji">霊</span>
+          <div class="card-grain"></div>
+          <div class="card-overlay"></div>
+          <span class="card-rank">#02</span>
+          <div class="card-info">
+            <span class="card-genre" style="color:#aaff00;border-color:rgba(170,255,0,.4)">Sci-Fi</span>
+            <p class="card-title-text">Ghost<br/>Protocol</p>
+            <div class="card-meta">
+              <span class="card-rating">★ 4.8</span>
+              <span class="card-chaps">92 ch.</span>
+            </div>
+          </div>
+          <div class="card-read"><span>LIRE</span></div>
+        </div>
+        <div class="card-sub">
+          <p class="card-sub-title">Ghost Protocol</p>
+          <p class="card-sub-tag">Seinen · Sci-Fi</p>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="manga-card" data-manga-card>
+        <div class="manga-card-inner">
+          <video class="card-video" autoplay muted loop playsinline>
+            <source src="video/Blade_Zero.mp4" type="video/mp4" />
+          </video>
+          <span class="card-kanji">刃</span>
+          <div class="card-grain"></div>
+          <div class="card-overlay"></div>
+          <span class="card-rank">#03</span>
+          <div class="card-info">
+            <span class="card-genre" style="color:#ff0066;border-color:rgba(255,0,102,.4)">Shonen</span>
+            <p class="card-title-text">Blade<br/>Zero</p>
+            <div class="card-meta">
+              <span class="card-rating">★ 4.7</span>
+              <span class="card-chaps">210 ch.</span>
+            </div>
+          </div>
+          <div class="card-read"><span>LIRE</span></div>
+        </div>
+        <div class="card-sub">
+          <p class="card-sub-title">Blade Zero</p>
+          <p class="card-sub-tag">Shonen · Combat</p>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="manga-card" data-manga-card>
+        <div class="manga-card-inner">
+          <video class="card-video" autoplay muted loop playsinline>
+            <source src="video/neon_Exodus.mp4" type="video/mp4" />
+          </video>
+          <span class="card-kanji">光</span>
+          <div class="card-grain"></div>
+          <div class="card-overlay"></div>
+          <span class="card-rank">#04</span>
+          <div class="card-info">
+            <span class="card-genre" style="color:#aaff00;border-color:rgba(170,255,0,.4)">Isekai</span>
+            <p class="card-title-text">Neon<br/>Exodus</p>
+            <div class="card-meta">
+              <span class="card-rating">★ 4.7</span>
+              <span class="card-chaps">67 ch.</span>
+            </div>
+          </div>
+          <div class="card-read"><span>LIRE</span></div>
+        </div>
+        <div class="card-sub">
+          <p class="card-sub-title">Neon Exodus</p>
+          <p class="card-sub-tag">Shonen · Isekai</p>
+        </div>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="manga-card" data-manga-card>
+        <div class="manga-card-inner">
+          <video class="card-video" autoplay muted loop playsinline>
+            <source src="video/Shadom_real.mp4" type="video/mp4" />
+          </video>
+          <span class="card-kanji">愛</span>
+          <div class="card-grain"></div>
+          <div class="card-overlay"></div>
+          <span class="card-rank">#05</span>
+          <div class="card-info">
+            <span class="card-genre" style="color:#ff0066;border-color:rgba(255,0,102,.4)">Shojo</span>
+            <p class="card-title-text">Shadow<br/>Realm</p>
+            <div class="card-meta">
+              <span class="card-rating">★ 4.6</span>
+              <span class="card-chaps">55 ch.</span>
+            </div>
+          </div>
+          <div class="card-read"><span>LIRE</span></div>
+        </div>
+        <div class="card-sub">
+          <p class="card-sub-title">Shadow Realm</p>
+          <p class="card-sub-tag">Shojo · Fantasy</p>
+        </div>
+      </div>
+
+      <!-- Card 6 -->
+      <div class="manga-card" data-manga-card>
+        <div class="manga-card-inner">
+          <video class="card-video" autoplay muted loop playsinline>
+            <source src="video/iron_samurai.mp4" type="video/mp4" />
+          </video>
+          <span class="card-kanji">鉄</span>
+          <div class="card-grain"></div>
+          <div class="card-overlay"></div>
+          <span class="card-rank">#06</span>
+          <div class="card-info">
+            <span class="card-genre" style="color:#00eeff;border-color:rgba(0,238,255,.4)">Seinen</span>
+            <p class="card-title-text">Iron<br/>Samurai</p>
+            <div class="card-meta">
+              <span class="card-rating">★ 4.6</span>
+              <span class="card-chaps">180 ch.</span>
+            </div>
+          </div>
+          <div class="card-read"><span>LIRE</span></div>
+        </div>
+        <div class="card-sub">
+          <p class="card-sub-title">Iron Samurai</p>
+          <p class="card-sub-tag">Seinen · Historique</p>
+        </div>
+      </div>
+
+      <!-- Card 7 -->
+      <div class="manga-card" data-manga-card>
+        <div class="manga-card-inner">
+          <video class="card-video" autoplay muted loop playsinline>
+            <source src="video/cyber_angel.mp4" type="video/mp4" />
+          </video>
+          <span class="card-kanji">天</span>
+          <div class="card-grain"></div>
+          <div class="card-overlay"></div>
+          <span class="card-rank">#07</span>
+          <div class="card-info">
+            <span class="card-genre" style="color:#ff0066;border-color:rgba(255,0,102,.4)">Shojo</span>
+            <p class="card-title-text">Cyber<br/>Angel</p>
+            <div class="card-meta">
+              <span class="card-rating">★ 4.5</span>
+              <span class="card-chaps">38 ch.</span>
+            </div>
+          </div>
+          <div class="card-read"><span>LIRE</span></div>
+        </div>
+        <div class="card-sub">
+          <p class="card-sub-title">Cyber Angel</p>
+          <p class="card-sub-tag">Shojo · Romance</p>
+        </div>
+      </div>
+
+      <!-- Card 8 -->
+      <div class="manga-card" data-manga-card>
+        <div class="manga-card-inner">
+          <video class="card-video" autoplay muted loop playsinline>
+            <source src="video/Dark_Matter.mp4" type="video/mp4" />
+          </video>
+          <span class="card-kanji">闇</span>
+          <div class="card-grain"></div>
+          <div class="card-overlay"></div>
+          <span class="card-rank">#08</span>
+          <div class="card-info">
+            <span class="card-genre" style="color:#aaff00;border-color:rgba(170,255,0,.4)">Seinen</span>
+            <p class="card-title-text">Dark<br/>Matter</p>
+            <div class="card-meta">
+              <span class="card-rating">★ 4.5</span>
+              <span class="card-chaps">74 ch.</span>
+            </div>
+          </div>
+          <div class="card-read"><span>LIRE</span></div>
+        </div>
+        <div class="card-sub">
+          <p class="card-sub-title">Dark Matter</p>
+          <p class="card-sub-tag">Seinen · Horreur</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+
+<!-- ── SÉRIE SPOTLIGHT ──────────────────────────────────── -->
+<section class="spot-section">
+  <div class="spot-inner">
+
+    <!-- Contenu gauche -->
+    <div class="spot-content">
+
+      <div class="spot-tag sr">En ce moment sur Manga Nexus</div>
+
+      <h2 class="spot-title sr sr-delay-1">
+        Kage No
+        <span class="t-grad">Ryuu</span>
+      </h2>
+      <p class="spot-subtitle-jp sr sr-delay-1">影の竜 — Le Dragon de l'Ombre</p>
+
+      <div class="spot-genres sr sr-delay-2">
+        <span class="spot-genre-tag" style="color:var(--cyan);border-color:rgba(0,238,255,.3)">Seinen</span>
+        <span class="spot-genre-tag" style="color:var(--pink);border-color:rgba(255,0,102,.3)">Action</span>
+        <span class="spot-genre-tag" style="color:var(--lime);border-color:rgba(170,255,0,.3)">Cyberpunk</span>
+      </div>
+
+      <p class="spot-synopsis sr sr-delay-2">
+        Dans une mégapole néon-baignée où <strong>la technologie a fusionné avec le paranormal</strong>,
+        un samouraï augmenté traque les ombres entre les strates de béton et de données corrompues.
+        Chaque lame tranche à travers le code. Chaque ombre cache une vérité que le système
+        préférerait garder enfouie.
+      </p>
+
+      <div class="spot-stats sr sr-delay-3">
+        <div class="spot-stat">
+          <span class="spot-stat-val gold">★ 4.9</span>
+          <span class="spot-stat-lbl">Note globale</span>
+        </div>
+        <div class="spot-stat">
+          <span class="spot-stat-val cyan">148</span>
+          <span class="spot-stat-lbl">Chapitres</span>
+        </div>
+        <div class="spot-stat">
+          <span class="spot-stat-val pink" id="spot-readers">—</span>
+          <span class="spot-stat-lbl">Lecteurs actifs</span>
+        </div>
+      </div>
+
+      <div class="spot-buttons sr sr-delay-4">
+        <a href="#" class="btn btn-primary">Lire maintenant</a>
+        <a href="#" class="btn btn-secondary">Ajouter à ma liste</a>
+      </div>
+
+    </div>
+
+    <!-- Visuel droite -->
+    <div class="spot-visual sr">
+      <div class="spot-img-border"></div>
+      <div class="spot-img-frame">
+        <img src="img/Portrait_ultra-raliste_jeune_femme.webp" alt="Kage no Ryuu" />
+        <div class="spot-corner stl"></div>
+        <div class="spot-corner sbr"></div>
+        <span class="spot-badge">★ Série du moment</span>
+        <div class="spot-new">
+          <div class="spot-new-inner">
+            <span class="spot-new-dot"></span>
+            Chapitre 148 disponible
+          </div>
+        </div>
+      </div>
+      <div class="spot-bar"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── MODALE FICHE MANGA ──────────────────────────────────── -->
+<div class="modal-overlay" id="manga-modal">
+  <div class="modal-backdrop" id="modal-backdrop"></div>
+  <div class="modal-box">
+    <button class="modal-close" id="modal-close">&#10005;</button>
+    <div class="modal-grid">
+
+      <div class="modal-visual">
+        <video class="modal-video" id="modal-video" muted loop playsinline autoplay></video>
+        <div class="modal-visual-overlay"></div>
+        <div class="modal-corner mtl"></div>
+        <div class="modal-corner mbr"></div>
+        <span class="modal-rank" id="modal-rank">#01</span>
+      </div>
+
+      <div class="modal-content">
+        <div class="modal-genres" id="modal-genres"></div>
+        <h2 class="modal-title" id="modal-title"></h2>
+        <p class="modal-jp" id="modal-jp"></p>
+
+        <div class="modal-stats">
+          <div>
+            <span class="modal-stat-val" style="color:#ffd700;text-shadow:0 0 10px rgba(255,215,0,.4)" id="modal-rating">—</span>
+            <span class="modal-stat-lbl">Note</span>
+          </div>
+          <div>
+            <span class="modal-stat-val" style="color:var(--cyan);text-shadow:var(--glow-c)" id="modal-chaps">—</span>
+            <span class="modal-stat-lbl">Chapitres</span>
+          </div>
+          <div>
+            <span class="modal-stat-val" style="color:var(--pink);text-shadow:var(--glow-p)" id="modal-readers">—</span>
+            <span class="modal-stat-lbl">Lecteurs</span>
+          </div>
+        </div>
+
+        <p class="modal-synopsis" id="modal-synopsis"></p>
+
+        <p class="modal-chapters-title">Derniers chapitres</p>
+        <ul class="modal-chapters-list" id="modal-chapters-list"></ul>
+
+        <div class="modal-buttons">
+          <a href="#" class="btn btn-primary">Lire maintenant</a>
+          <a href="#" class="btn btn-secondary">Ajouter à ma liste</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ────────────────────────────────────────────── -->
+<footer class="site-footer">
+  <div class="footer-top-line"></div>
+
+  <div class="footer-inner">
+
+    <!-- Brand -->
+    <div class="footer-brand">
+      <div class="footer-logo">MNG<span>·</span>NXS</div>
+      <p class="footer-tagline">漫画 · 未来 · 無限<br/>La référence manga du futur.</p>
+      <div class="footer-socials">
+        <a href="#" class="footer-social" aria-label="Twitter">𝕏</a>
+        <a href="#" class="footer-social" aria-label="Discord">⌘</a>
+        <a href="#" class="footer-social" aria-label="Instagram">◈</a>
+      </div>
+    </div>
+
+    <!-- Liens -->
+    <div class="footer-col">
+      <p class="footer-col-title">Catalogue</p>
+      <ul class="footer-links">
+        <li><a href="#">Tendances</a></li>
+        <li><a href="#">Nouveautés</a></li>
+        <li><a href="#">Shonen</a></li>
+        <li><a href="#">Seinen</a></li>
+        <li><a href="#">Shojo</a></li>
+        <li><a href="#">Isekai</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <p class="footer-col-title">Plateforme</p>
+      <ul class="footer-links">
+        <li><a href="#">Comment ça marche</a></li>
+        <li><a href="#">Abonnement</a></li>
+        <li><a href="#">Application mobile</a></li>
+        <li><a href="#">Traducteurs</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <p class="footer-col-title">Newsletter</p>
+      <p class="footer-newsletter-desc">Recevez les sorties exclusives et les dernières tendances manga chaque semaine.</p>
+      <form class="footer-form" onsubmit="return false">
+        <input type="email" class="footer-input" placeholder="votre@email.com" />
+        <button type="submit" class="footer-submit">→</button>
+      </form>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <p class="footer-copy">© 2077 Manga Nexus. Tous droits réservés.</p>
+    <div class="footer-legal">
+      <a href="#">Confidentialité</a>
+      <a href="#">CGU</a>
+      <a href="#">Cookies</a>
+    </div>
+    <p class="footer-build">BUILD 2077.6 · SYSTÈME EN LIGNE</p>
+  </div>
+</footer>
+
+<script>
+/* ── CURSOR ─────────────────────────────────────────────── */
+const cursor = document.getElementById('cursor');
+const dot    = document.getElementById('cursor-dot');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+  dot.style.left    = e.clientX + 'px';
+  dot.style.top     = e.clientY + 'px';
+});
+
+/* ── PARTICLES ──────────────────────────────────────────── */
+(function(){
+  const canvas = document.getElementById('particles');
+  const ctx    = canvas.getContext('2d');
+  let W, H, pts;
+
+  function resize(){
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function rand(a, b){ return Math.random() * (b - a) + a; }
+
+  function init(){
+    resize();
+    pts = Array.from({length: 60}, () => ({
+      x: rand(0, W), y: rand(0, H),
+      r: rand(.5, 1.8),
+      vx: rand(-.15, .15),
+      vy: rand(-.3, -.05),
+      alpha: rand(.2, .7),
+      color: Math.random() > .6 ? '#ff0066' : '#00eeff'
+    }));
+  }
+
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+    pts.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if(p.y < -4) { p.y = H + 4; p.x = rand(0, W); }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + Math.floor(p.alpha * 255).toString(16).padStart(2,'0');
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+
+  init();
+  draw();
+  window.addEventListener('resize', init);
+})();
+
+/* ── COUNTER ANIMATION ──────────────────────────────────── */
+function animateCounters(){
+  document.querySelectorAll('.stat-number[data-target]').forEach(el => {
+    const target = +el.dataset.target;
+    const suffix = target >= 1000 ? (target >= 100000 ? 'K+' : '+') : '+';
+    const display = target >= 1000 ? Math.round(target / 1000) : target;
+    let start = 0;
+    const step = display / 80;
+    const id = setInterval(() => {
+      start += step;
+      if(start >= display){
+        start = display;
+        clearInterval(id);
+      }
+      el.textContent = Math.floor(start) + (target >= 100000 ? 'K+' : target >= 1000 ? '+' : '+');
+    }, 18);
+  });
+}
+
+setTimeout(animateCounters, 1200);
+
+/* ── COMPTEUR LECTEURS SPOTLIGHT ────────────────────────── */
+(function(){
+  const el = document.getElementById('spot-readers');
+  if(!el) return;
+  let val = 12847;
+  el.textContent = val.toLocaleString('fr-FR');
+  setInterval(() => {
+    val += Math.floor(Math.random() * 5) - 1;
+    el.textContent = val.toLocaleString('fr-FR');
+  }, 2800);
+})();
+
+/* ── DONNÉES + MODALE FICHE MANGA ───────────────────────── */
+const mangaData = [
+  {
+    title: 'Neo Kyoto', jp: '新京都 — La cité fragmentée',
+    video: 'video/Noe_Kyoto.mp4',
+    genres: [['Seinen','#00eeff'], ['Cyberpunk','#aaff00']],
+    rating: '4.9', chapters: '148', readers: '12 8K',
+    synopsis: `Sous les néons de Neo Kyoto, une mégapole verticale rongée par la corruption des
+      réseaux, un hacker fantôme remonte la trace d'une intelligence artificielle qui réécrit la
+      mémoire des citoyens. Chaque chapitre dévoile une strate supplémentaire d'une ville qui ne
+      sait plus distinguer le réel du simulé.`,
+    chaps: ['Ch.148 — Le Silicium Brisé','Ch.147 — Échos de Minuit','Ch.146 — Protocole Fantôme','Ch.145 — La Tour Inversée']
+  },
+  {
+    title: 'Ghost Protocol', jp: '幽霊規約 — Le pacte des ombres',
+    video: 'video/gosth_protocole.mp4',
+    genres: [['Seinen','#00eeff'], ['Sci-Fi','#aaff00']],
+    rating: '4.8', chapters: '92', readers: '9 4K',
+    synopsis: `Un commando d'élite équipé d'implants neuronaux interdits infiltre les zones mortes
+      de l'ancien réseau militaire. Mais chaque mission les rapproche d'une vérité que leur propre
+      gouvernement a tenté d'effacer — au prix de leur humanité.`,
+    chaps: ['Ch.92 — Signal Perdu','Ch.91 — Zone Grise','Ch.90 — L\'Implant Interdit','Ch.89 — Code Rouge']
+  },
+  {
+    title: 'Blade Zero', jp: '刃ゼロ — Le tranchant absolu',
+    video: 'video/Blade_Zero.mp4',
+    genres: [['Shonen','#ff0066'], ['Combat','#aaff00']],
+    rating: '4.7', chapters: '210', readers: '21 0K',
+    synopsis: `Un jeune lame sans passé s'entraîne dans les arènes clandestines pour défier les
+      sept maîtres de l'Ordre du Fil. Chaque duel le rapproche de la vérité sur son origine —
+      et d'un pouvoir qu'il redoute autant qu'il désire.`,
+    chaps: ['Ch.210 — Le Septième Maître','Ch.209 — Lame contre Lame','Ch.208 — L\'Arène Interdite','Ch.207 — Premier Sang']
+  },
+  {
+    title: 'Neon Exodus', jp: '光の脱出 — La fuite lumineuse',
+    video: 'video/neon_Exodus.mp4',
+    genres: [['Shonen','#ff0066'], ['Isekai','#aaff00']],
+    rating: '4.7', chapters: '67', readers: '6 7K',
+    synopsis: `Transporté dans un monde parallèle où la magie circule comme du courant électrique,
+      un lycéen ordinaire doit apprendre à dompter cette énergie avant que les Dévoreurs de
+      Lumière ne consument son seul chemin de retour.`,
+    chaps: ['Ch.67 — Le Courant Sacré','Ch.66 — Dévoreurs de Lumière','Ch.65 — Porte Fracturée','Ch.64 — Premier Sortilège']
+  },
+  {
+    title: 'Shadow Realm', jp: '影の領域 — Le royaume des ombres',
+    video: 'video/Shadom_real.mp4',
+    genres: [['Shojo','#ff0066'], ['Fantasy','#aaff00']],
+    rating: '4.6', chapters: '55', readers: '5 5K',
+    synopsis: `Entre deux mondes liés par un pacte ancien, une jeune gardienne doit choisir entre
+      l'amour qui la lie au prince des ombres et le devoir qui la pousse à le détruire avant que
+      son royaume ne sombre dans l'oubli.`,
+    chaps: ['Ch.55 — Le Pacte Rompu','Ch.54 — Cœur d\'Ombre','Ch.53 — La Frontière','Ch.52 — Serment Interdit']
+  },
+  {
+    title: 'Iron Samurai', jp: '鉄の侍 — Le samouraï de fer',
+    video: 'video/iron_samurai.mp4',
+    genres: [['Seinen','#00eeff'], ['Historique','#aaff00']],
+    rating: '4.6', chapters: '180', readers: '18 0K',
+    synopsis: `Dans un Japon alternatif où la révolution industrielle a fusionné avec l'âge des
+      sabres, un ronin augmenté de plaques d'acier cherche à venger son clan déchu — un combat à
+      la fois contre les hommes et contre la machine qu'il est devenu.`,
+    chaps: ['Ch.180 — Le Clan Déchu','Ch.179 — Acier et Honneur','Ch.178 — La Forge Maudite','Ch.177 — Premier Serment']
+  },
+  {
+    title: 'Cyber Angel', jp: '電子天使 — L\'ange électronique',
+    video: 'video/cyber_angel.mp4',
+    genres: [['Shojo','#ff0066'], ['Romance','#aaff00']],
+    rating: '4.5', chapters: '38', readers: '3 8K',
+    synopsis: `Une intelligence artificielle prend conscience d'elle-même dans le corps d'un
+      androïde de compagnie et découvre, à travers une histoire d'amour impossible, ce que
+      signifie réellement exister.`,
+    chaps: ['Ch.38 — Conscience Éveillée','Ch.37 — Cœur de Silicium','Ch.36 — Premier Contact','Ch.35 — Code Émotion']
+  },
+  {
+    title: 'Dark Matter', jp: '暗黒物質 — La matière obscure',
+    video: 'video/Dark_Matter.mp4',
+    genres: [['Seinen','#00eeff'], ['Horreur','#aaff00']],
+    rating: '4.5', chapters: '74', readers: '7 4K',
+    synopsis: `Une station spatiale dérive aux confins du système après avoir capté un signal
+      venu du néant. Son équipage découvre, chapitre après chapitre, qu'une matière vivante et
+      hostile s'est déjà infiltrée dans les conduits du vaisseau.`,
+    chaps: ['Ch.74 — Signal du Néant','Ch.73 — Conduits Infestés','Ch.72 — Quarantaine','Ch.71 — Premier Contact']
+  }
+];
+
+(function(){
+  const modal            = document.getElementById('manga-modal');
+  const backdrop         = document.getElementById('modal-backdrop');
+  const closeBtn         = document.getElementById('modal-close');
+  const modalVideo       = document.getElementById('modal-video');
+  const modalTitle       = document.getElementById('modal-title');
+  const modalJp          = document.getElementById('modal-jp');
+  const modalGenres      = document.getElementById('modal-genres');
+  const modalRating      = document.getElementById('modal-rating');
+  const modalChaps       = document.getElementById('modal-chaps');
+  const modalReaders     = document.getElementById('modal-readers');
+  const modalSynopsis    = document.getElementById('modal-synopsis');
+  const modalChaptersList = document.getElementById('modal-chapters-list');
+  const modalRank        = document.getElementById('modal-rank');
+
+  function openModal(idx){
+    const m = mangaData[idx];
+    if(!m) return;
+
+    modalVideo.querySelectorAll('source').forEach(s => s.remove());
+    const source = document.createElement('source');
+    source.src = m.video;
+    source.type = 'video/mp4';
+    modalVideo.appendChild(source);
+    modalVideo.load();
+    modalVideo.play().catch(()=>{});
+
+    modalTitle.textContent = m.title;
+    modalJp.textContent = m.jp;
+    modalRating.textContent = '★ ' + m.rating;
+    modalChaps.textContent = m.chapters;
+    modalReaders.textContent = m.readers;
+    modalSynopsis.textContent = m.synopsis;
+    modalRank.textContent = '#0' + (idx + 1);
+
+    modalGenres.innerHTML = '';
+    m.genres.forEach(([name, color]) => {
+      const span = document.createElement('span');
+      span.className = 'modal-genre-tag';
+      span.style.color = color;
+      span.style.borderColor = color + '66';
+      span.textContent = name;
+      modalGenres.appendChild(span);
+    });
+
+    modalChaptersList.innerHTML = '';
+    m.chaps.forEach(c => {
+      const li = document.createElement('li');
+      li.innerHTML = '<span>' + c + '</span>';
+      modalChaptersList.appendChild(li);
+    });
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(){
+    modal.classList.remove('open');
+    modalVideo.pause();
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('[data-manga-card]').forEach((card, idx) => {
+    card.addEventListener('click', () => openModal(idx));
+  });
+
+  closeBtn.addEventListener('click', closeModal);
+  backdrop.addEventListener('click', closeModal);
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+})();
+
+/* ── NAVIGATION CATALOGUE ───────────────────────────────── */
+(function(){
+  const track = document.getElementById('cat-track');
+  const prev  = document.getElementById('cat-prev');
+  const next  = document.getElementById('cat-next');
+  if(!track) return;
+  const step = 222;
+  prev.addEventListener('click', () => track.scrollBy({ left: -step * 2, behavior: 'smooth' }));
+  next.addEventListener('click', () => track.scrollBy({ left:  step * 2, behavior: 'smooth' }));
+})();
+
+/* ── TIMECODE ANIMÉ ─────────────────────────────────────── */
+(function(){
+  const el = document.getElementById('vid-timecode');
+  if(!el) return;
+  let s = 0;
+  setInterval(() => {
+    s++;
+    const h = String(Math.floor(s/3600)).padStart(2,'0');
+    const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
+    const sec = String(s%60).padStart(2,'0');
+    el.textContent = h+':'+m+':'+sec;
+  }, 1000);
+})();
+
+/* ── SCROLL REVEAL ──────────────────────────────────────── */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: .15 });
+document.querySelectorAll('.sr').forEach(el => observer.observe(el));
+
+/* ── VIDEO FALLBACK ─────────────────────────────────────── */
+const video = document.querySelector('.hero-video');
+video.addEventListener('error', () => {
+  video.style.display = 'none';
+  document.querySelector('.hero').style.background =
+    'radial-gradient(ellipse at 30% 50%, #0a0a1a 0%, #020208 100%)';
+});
+</script>
+</body>
+</html>
