@@ -2580,7 +2580,7 @@
       </div>
 
       <div class="spot-buttons sr sr-delay-4">
-        <a href="#" class="btn btn-primary">Lire maintenant</a>
+        <a href="#" class="btn btn-primary" id="spot-read-btn">Lire maintenant</a>
         <a href="#" class="btn btn-secondary">Ajouter à ma liste</a>
       </div>
 
@@ -2616,6 +2616,7 @@
 
       <div class="modal-visual">
         <video class="modal-video" id="modal-video" muted loop playsinline autoplay></video>
+        <img class="modal-img" id="modal-img" alt="" style="display:none" />
         <div class="modal-visual-overlay"></div>
         <div class="modal-corner mtl"></div>
         <div class="modal-corner mbr"></div>
@@ -2889,6 +2890,18 @@ const mangaData = [
       venu du néant. Son équipage découvre, chapitre après chapitre, qu'une matière vivante et
       hostile s'est déjà infiltrée dans les conduits du vaisseau.`,
     chaps: ['Ch.74 — Signal du Néant','Ch.73 — Conduits Infestés','Ch.72 — Quarantaine','Ch.71 — Premier Contact']
+  },
+  {
+    title: 'Kage No Ryuu', jp: '影の竜 — Le Dragon de l\'Ombre',
+    img: 'img/Portrait_ultra-raliste_jeune_femme.webp',
+    rank: '★ SPOTLIGHT',
+    genres: [['Seinen','#00eeff'], ['Action','#ff0066'], ['Cyberpunk','#aaff00']],
+    rating: '4.9', chapters: '148', readers: '12 9K',
+    synopsis: `Dans une mégapole néon-baignée où la technologie a fusionné avec le paranormal, un
+      samouraï augmenté traque les ombres entre les strates de béton et de données corrompues.
+      Chaque lame tranche à travers le code. Chaque ombre cache une vérité que le système
+      préférerait garder enfouie.`,
+    chaps: ['Ch.148 — Le Système Enfoui','Ch.147 — Lame et Code','Ch.146 — Strates Corrompues','Ch.145 — Le Dragon Réveillé']
   }
 ];
 
@@ -2906,18 +2919,28 @@ const mangaData = [
   const modalSynopsis    = document.getElementById('modal-synopsis');
   const modalChaptersList = document.getElementById('modal-chapters-list');
   const modalRank        = document.getElementById('modal-rank');
+  const modalImg         = document.getElementById('modal-img');
 
   function openModal(idx){
     const m = mangaData[idx];
     if(!m) return;
 
-    modalVideo.querySelectorAll('source').forEach(s => s.remove());
-    const source = document.createElement('source');
-    source.src = m.video;
-    source.type = 'video/mp4';
-    modalVideo.appendChild(source);
-    modalVideo.load();
-    modalVideo.play().catch(()=>{});
+    if(m.video){
+      modalImg.style.display = 'none';
+      modalVideo.style.display = '';
+      modalVideo.querySelectorAll('source').forEach(s => s.remove());
+      const source = document.createElement('source');
+      source.src = m.video;
+      source.type = 'video/mp4';
+      modalVideo.appendChild(source);
+      modalVideo.load();
+      modalVideo.play().catch(()=>{});
+    } else {
+      modalVideo.pause();
+      modalVideo.style.display = 'none';
+      modalImg.src = m.img;
+      modalImg.style.display = '';
+    }
 
     modalTitle.textContent = m.title;
     modalJp.textContent = m.jp;
@@ -2925,7 +2948,7 @@ const mangaData = [
     modalChaps.textContent = m.chapters;
     modalReaders.textContent = m.readers;
     modalSynopsis.textContent = m.synopsis;
-    modalRank.textContent = '#0' + (idx + 1);
+    modalRank.textContent = m.rank || ('#0' + (idx + 1));
 
     modalGenres.innerHTML = '';
     m.genres.forEach(([name, color]) => {
@@ -2957,6 +2980,14 @@ const mangaData = [
   document.querySelectorAll('[data-manga-card]').forEach((card, idx) => {
     card.addEventListener('click', () => openModal(idx));
   });
+
+  const spotReadBtn = document.getElementById('spot-read-btn');
+  if(spotReadBtn){
+    spotReadBtn.addEventListener('click', e => {
+      e.preventDefault();
+      openModal(mangaData.length - 1);
+    });
+  }
 
   closeBtn.addEventListener('click', closeModal);
   backdrop.addEventListener('click', closeModal);
